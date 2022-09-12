@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.utils import executor
 
 from bot.config import *
-from bot.messages import MESSAGES
+from bot.messages.messages import MESSAGES
 from bot.states.states import TestStates
 
 
