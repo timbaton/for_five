@@ -1,16 +1,26 @@
 import logging
+import time
 
 from aiogram import types
 from aiogram.utils import executor
 
 from bot.config import *
+from bot.keyboards.inline.job_type import categories_markup, jobs
 from bot.messages.messages import MESSAGES
 from bot.states.states import TestStates
 
 
+@dp.callback_query_handler(lambda c: jobs.__contains__(c.data))
+async def process_callback_button1(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, f'Нажата кнопка! {callback_query.data}')
+
+
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    await message.reply(MESSAGES['start'])
+    await message.reply(MESSAGES.start.value)
+    await show_typing(message)
+    await bot.send_message(message.chat.id, MESSAGES.choose_job.value, reply_markup=categories_markup())
 
 
 @dp.message_handler(commands=['help'])
@@ -26,7 +36,7 @@ async def on_startup(dp):
     await bot.set_webhook(WEBHOOK_URL)
 
 
-async def on_shutdown():
+async def on_shutdown(dp):
     logging.warning("Shutting down..")
     await bot.delete_webhook()
     await dp.storage.close()
@@ -77,6 +87,11 @@ async def some_test_state_case_met(message: types.Message):
 @dp.message_handler()
 async def echo_message(msg: types.Message):
     await bot.send_message(msg.from_user.id, msg.text)
+
+
+async def show_typing(message, wait=1):
+    await bot.send_chat_action(message.chat.id, "typing")
+    time.sleep(wait)
 
 
 if __name__ == '__main__':
